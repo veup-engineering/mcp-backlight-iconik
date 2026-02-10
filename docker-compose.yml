@@ -1,0 +1,36 @@
+services:
+  mcp-iconik:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-iconik
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ICONIK_URL=${ICONIK_URL:-https://app.iconik.io}
+      - ICONIK_API=${ICONIK_API}
+      - ICONIK_APP_ID=${ICONIK_APP_ID}
+      - ICONIK_AUTH_TOKEN=${ICONIK_AUTH_TOKEN}
+      - DEBUG=${DEBUG:-false}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Optional: Nginx reverse proxy for SSL termination
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./certs:/etc/nginx/certs:ro
+  #   depends_on:
+  #     - mcp-iconik
