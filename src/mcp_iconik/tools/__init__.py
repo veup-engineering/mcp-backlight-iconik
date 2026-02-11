@@ -1,23 +1,25 @@
 """Iconik API tools for MCP."""
 
-from .assets import ASSET_TOOLS
-from .collections import COLLECTION_TOOLS
-from .files import FILE_TOOLS
-from .jobs import JOB_TOOLS
-from .metadata import METADATA_TOOLS
-from .search import SEARCH_TOOLS
-from .users import USER_TOOLS
-from .generic import GENERIC_TOOLS
+from mcp.server.fastmcp import FastMCP
 
-ALL_TOOLS = (
-    ASSET_TOOLS
-    + COLLECTION_TOOLS
-    + FILE_TOOLS
-    + JOB_TOOLS
-    + METADATA_TOOLS
-    + SEARCH_TOOLS
-    + USER_TOOLS
-    + GENERIC_TOOLS
-)
+from ..client import IconikClient
+from .assets import register_asset_tools
+from .collections import register_collection_tools
+from .files import register_file_tools
+from .generic import register_generic_tools
+from .jobs import register_job_tools
+from .metadata import register_metadata_tools
+from .search import register_search_tools
+from .users import register_user_tools
 
-__all__ = ["ALL_TOOLS"]
+
+def register_all_tools(mcp: FastMCP, client: IconikClient) -> None:
+    """Register all Iconik tool modules with the MCP server."""
+    register_asset_tools(mcp, client)
+    register_collection_tools(mcp, client)
+    register_file_tools(mcp, client)
+    register_job_tools(mcp, client)
+    register_metadata_tools(mcp, client)
+    register_search_tools(mcp, client)
+    register_user_tools(mcp, client)
+    register_generic_tools(mcp, client)

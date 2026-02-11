@@ -1,115 +1,79 @@
 """File and storage tools for Iconik MCP."""
 
-from mcp.types import Tool
+from mcp.server.fastmcp import FastMCP
 
-FILE_TOOLS = [
-    Tool(
-        name="iconik_list_storages",
-        description="List all storage locations configured in Iconik.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "integer",
-                    "description": "Page number (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page (default: 50)",
-                    "default": 50,
-                },
-            },
-        },
-    ),
-    Tool(
-        name="iconik_get_storage",
-        description="Get details of a specific storage location.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "storage_id": {
-                    "type": "string",
-                    "description": "The unique ID of the storage",
-                },
-            },
-            "required": ["storage_id"],
-        },
-    ),
-    Tool(
-        name="iconik_get_asset_files",
-        description="Get all files associated with an asset.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset",
-                },
-                "page": {
-                    "type": "integer",
-                    "description": "Page number (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page (default: 50)",
-                    "default": 50,
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-    Tool(
-        name="iconik_get_asset_formats",
-        description="Get all format definitions for an asset (ORIGINAL, PROXY, etc.).",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset",
-                },
-                "page": {
-                    "type": "integer",
-                    "description": "Page number (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page (default: 50)",
-                    "default": 50,
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-    Tool(
-        name="iconik_get_asset_proxies",
-        description="Get proxy files for an asset (video previews, thumbnails).",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset",
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-    Tool(
-        name="iconik_get_asset_keyframes",
-        description="Get keyframe images for a video asset.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset",
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-]
+from ..client import IconikClient
+
+
+def register_file_tools(mcp: FastMCP, client: IconikClient) -> None:
+    """Register file and storage tools."""
+
+    @mcp.tool()
+    async def iconik_list_storages(
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """List all storage locations configured in Iconik.
+
+        Args:
+            page: Page number (default: 1)
+            per_page: Items per page (default: 50)
+        """
+        return await client.list_storages(page=page, per_page=per_page)
+
+    @mcp.tool()
+    async def iconik_get_storage(storage_id: str) -> dict:
+        """Get details of a specific storage location.
+
+        Args:
+            storage_id: The unique ID of the storage
+        """
+        return await client.get_storage(storage_id)
+
+    @mcp.tool()
+    async def iconik_get_asset_files(
+        asset_id: str,
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """Get all files associated with an asset.
+
+        Args:
+            asset_id: The unique ID of the asset
+            page: Page number (default: 1)
+            per_page: Items per page (default: 50)
+        """
+        return await client.get_asset_files(asset_id, page=page, per_page=per_page)
+
+    @mcp.tool()
+    async def iconik_get_asset_formats(
+        asset_id: str,
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """Get all format definitions for an asset (ORIGINAL, PROXY, etc.).
+
+        Args:
+            asset_id: The unique ID of the asset
+            page: Page number (default: 1)
+            per_page: Items per page (default: 50)
+        """
+        return await client.get_asset_formats(asset_id, page=page, per_page=per_page)
+
+    @mcp.tool()
+    async def iconik_get_asset_proxies(asset_id: str) -> dict:
+        """Get proxy files for an asset (video previews, thumbnails).
+
+        Args:
+            asset_id: The unique ID of the asset
+        """
+        return await client.get_asset_proxies(asset_id)
+
+    @mcp.tool()
+    async def iconik_get_asset_keyframes(asset_id: str) -> dict:
+        """Get keyframe images for a video asset.
+
+        Args:
+            asset_id: The unique ID of the asset
+        """
+        return await client.get_asset_keyframes(asset_id)

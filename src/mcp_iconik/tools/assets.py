@@ -1,111 +1,92 @@
 """Asset tools for Iconik MCP."""
 
-from mcp.types import Tool
+from typing import Optional
 
-ASSET_TOOLS = [
-    Tool(
-        name="iconik_list_assets",
-        description="List assets in Iconik. Returns paginated list of assets with their metadata.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "integer",
-                    "description": "Page number (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page (default: 50, max: 100)",
-                    "default": 50,
-                },
-                "sort": {
-                    "type": "string",
-                    "description": "Sort field (e.g., 'date_created', '-date_created' for descending)",
-                },
-            },
-        },
-    ),
-    Tool(
-        name="iconik_get_asset",
-        description="Get detailed information about a specific asset by its ID.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset",
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-    Tool(
-        name="iconik_create_asset",
-        description="Create a new asset in Iconik.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "title": {
-                    "type": "string",
-                    "description": "Title of the asset",
-                },
-                "description": {
-                    "type": "string",
-                    "description": "Description of the asset",
-                },
-                "type": {
-                    "type": "string",
-                    "description": "Type of asset (VIDEO, AUDIO, IMAGE, DOCUMENT, OTHER)",
-                    "enum": ["VIDEO", "AUDIO", "IMAGE", "DOCUMENT", "OTHER"],
-                },
-                "status": {
-                    "type": "string",
-                    "description": "Status of the asset (ACTIVE, INACTIVE)",
-                    "default": "ACTIVE",
-                },
-            },
-            "required": ["title"],
-        },
-    ),
-    Tool(
-        name="iconik_update_asset",
-        description="Update an existing asset's properties.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset to update",
-                },
-                "title": {
-                    "type": "string",
-                    "description": "New title for the asset",
-                },
-                "description": {
-                    "type": "string",
-                    "description": "New description for the asset",
-                },
-                "status": {
-                    "type": "string",
-                    "description": "New status (ACTIVE, INACTIVE)",
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-    Tool(
-        name="iconik_delete_asset",
-        description="Delete an asset from Iconik. This moves the asset to the delete queue.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "asset_id": {
-                    "type": "string",
-                    "description": "The unique ID of the asset to delete",
-                },
-            },
-            "required": ["asset_id"],
-        },
-    ),
-]
+from mcp.server.fastmcp import FastMCP
+
+from ..client import IconikClient
+
+
+def register_asset_tools(mcp: FastMCP, client: IconikClient) -> None:
+    """Register asset-related tools."""
+
+    @mcp.tool()
+    async def iconik_list_assets(
+        page: int = 1,
+        per_page: int = 50,
+        sort: Optional[str] = None,
+    ) -> dict:
+        """List assets in Iconik. Returns paginated list of assets with their metadata.
+
+        Args:
+            page: Page number (default: 1)
+            per_page: Items per page (default: 50, max: 100)
+            sort: Sort field (e.g., 'date_created', '-date_created' for descending)
+        """
+        return await client.list_assets(page=page, per_page=per_page, sort=sort)
+
+    @mcp.tool()
+    async def iconik_get_asset(asset_id: str) -> dict:
+        """Get detailed information about a specific asset by its ID.
+
+        Args:
+            asset_id: The unique ID of the asset
+        """
+        return await client.get_asset(asset_id)
+
+    @mcp.tool()
+    async def iconik_create_asset(
+        title: str,
+        description: Optional[str] = None,
+        type: Optional[str] = None,
+        status: str = "ACTIVE",
+    ) -> dict:
+        """Create a new asset in Iconik.
+
+        Args:
+            title: Title of the asset
+            description: Description of the asset
+            type: Type of asset (VIDEO, AUDIO, IMAGE, DOCUMENT, OTHER)
+            status: Status of the asset (ACTIVE, INACTIVE)
+        """
+        data = {"title": title}
+        if description is not None:
+            data["description"] = description
+        if type is not None:
+            data["type"] = type
+        if status != "ACTIVE":
+            data["status"] = status
+        return await client.create_asset(data)
+
+    @mcp.tool()
+    async def iconik_update_asset(
+        asset_id: str,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> dict:
+        """Update an existing asset's properties.
+
+        Args:
+            asset_id: The unique ID of the asset to update
+            title: New title for the asset
+            description: New description for the asset
+            status: New status (ACTIVE, INACTIVE)
+        """
+        data = {}
+        if title is not None:
+            data["title"] = title
+        if description is not None:
+            data["description"] = description
+        if status is not None:
+            data["status"] = status
+        return await client.update_asset(asset_id, data)
+
+    @mcp.tool()
+    async def iconik_delete_asset(asset_id: str) -> dict:
+        """Delete an asset from Iconik. This moves the asset to the delete queue.
+
+        Args:
+            asset_id: The unique ID of the asset to delete
+        """
+        return await client.delete_asset(asset_id)

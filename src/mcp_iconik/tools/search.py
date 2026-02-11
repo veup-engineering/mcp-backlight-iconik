@@ -1,138 +1,95 @@
 """Search tools for Iconik MCP."""
 
-from mcp.types import Tool
+from typing import Any, Optional
 
-SEARCH_TOOLS = [
-    Tool(
-        name="iconik_search",
-        description="Search for assets and collections in Iconik using various criteria. Supports text search, filters, and facets.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "Text search query",
-                },
-                "doc_types": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Document types to search (assets, collections)",
-                    "default": ["assets"],
-                },
-                "filter": {
-                    "type": "object",
-                    "description": "Filter criteria object with 'operator' (AND/OR) and 'terms' array",
-                },
-                "sort": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "order": {"type": "string", "enum": ["asc", "desc"]},
-                        },
-                    },
-                    "description": "Sort criteria array",
-                },
-                "page": {
-                    "type": "integer",
-                    "description": "Page number (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page (default: 50)",
-                    "default": 50,
-                },
-            },
-        },
-    ),
-    Tool(
-        name="iconik_list_saved_searches",
-        description="List all saved searches in Iconik.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "integer",
-                    "description": "Page number (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page (default: 50)",
-                    "default": 50,
-                },
-            },
-        },
-    ),
-    Tool(
-        name="iconik_get_saved_search",
-        description="Get a saved search and optionally execute it to get results.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "search_id": {
-                    "type": "string",
-                    "description": "The unique ID of the saved search",
-                },
-                "include_results": {
-                    "type": "boolean",
-                    "description": "Whether to include search results (default: true)",
-                    "default": True,
-                },
-                "page": {
-                    "type": "integer",
-                    "description": "Page number for results (default: 1)",
-                    "default": 1,
-                },
-                "per_page": {
-                    "type": "integer",
-                    "description": "Items per page for results (default: 50)",
-                    "default": 50,
-                },
-            },
-            "required": ["search_id"],
-        },
-    ),
-    Tool(
-        name="iconik_create_saved_search",
-        description="Create a new saved search with specified criteria.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "Name for the saved search",
-                },
-                "criteria": {
-                    "type": "object",
-                    "description": "Search criteria object containing query, filter, doc_types, etc.",
-                    "properties": {
-                        "query": {"type": "string"},
-                        "doc_types": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                        },
-                        "filter": {"type": "object"},
-                    },
-                },
-            },
-            "required": ["name", "criteria"],
-        },
-    ),
-    Tool(
-        name="iconik_delete_saved_search",
-        description="Delete a saved search.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "search_id": {
-                    "type": "string",
-                    "description": "The unique ID of the saved search to delete",
-                },
-            },
-            "required": ["search_id"],
-        },
-    ),
-]
+from mcp.server.fastmcp import FastMCP
+
+from ..client import IconikClient
+
+
+def register_search_tools(mcp: FastMCP, client: IconikClient) -> None:
+    """Register search-related tools."""
+
+    @mcp.tool()
+    async def iconik_search(
+        query: Optional[str] = None,
+        doc_types: Optional[list[str]] = None,
+        filter: Optional[dict[str, Any]] = None,
+        sort: Optional[list[dict[str, str]]] = None,
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """Search for assets and collections in Iconik using various criteria.
+
+        Supports text search, filters, and facets.
+
+        Args:
+            query: Text search query
+            doc_types: Document types to search (assets, collections)
+            filter: Filter criteria object with 'operator' (AND/OR) and 'terms' array
+            sort: Sort criteria array of objects with 'name' and 'order' (asc/desc)
+            page: Page number (default: 1)
+            per_page: Items per page (default: 50)
+        """
+        return await client.search(
+            query=query,
+            filter_data=filter,
+            doc_types=doc_types,
+            page=page,
+            per_page=per_page,
+            sort=sort,
+        )
+
+    @mcp.tool()
+    async def iconik_list_saved_searches(
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """List all saved searches in Iconik.
+
+        Args:
+            page: Page number (default: 1)
+            per_page: Items per page (default: 50)
+        """
+        return await client.list_saved_searches(page=page, per_page=per_page)
+
+    @mcp.tool()
+    async def iconik_get_saved_search(
+        search_id: str,
+        include_results: bool = True,
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict:
+        """Get a saved search and optionally execute it to get results.
+
+        Args:
+            search_id: The unique ID of the saved search
+            include_results: Whether to include search results (default: true)
+            page: Page number for results (default: 1)
+            per_page: Items per page for results (default: 50)
+        """
+        return await client.get_saved_search(
+            search_id, include_results=include_results, page=page, per_page=per_page
+        )
+
+    @mcp.tool()
+    async def iconik_create_saved_search(
+        name: str,
+        criteria: dict[str, Any],
+    ) -> dict:
+        """Create a new saved search with specified criteria.
+
+        Args:
+            name: Name for the saved search
+            criteria: Search criteria object containing query, filter, doc_types, etc.
+        """
+        return await client.create_saved_search(name, criteria)
+
+    @mcp.tool()
+    async def iconik_delete_saved_search(search_id: str) -> dict:
+        """Delete a saved search.
+
+        Args:
+            search_id: The unique ID of the saved search to delete
+        """
+        return await client.delete_saved_search(search_id)
