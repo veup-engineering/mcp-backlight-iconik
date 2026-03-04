@@ -1,6 +1,7 @@
 """Iconik API client wrapper."""
 
 import base64
+import hashlib
 import json
 import os
 from typing import Any
@@ -35,9 +36,13 @@ class IconikClient:
             self.app_id = payload.get("app_id", "")
             # Use the full JWT as the Auth-Token
             self.auth_token = token
+            self.auth_mode = "jwt"
         else:
             self.app_id = app_id or os.getenv("ICONIK_APP_ID", "")
             self.auth_token = auth_token or os.getenv("ICONIK_AUTH_TOKEN", "")
+            self.auth_mode = "app_token"
+
+        self.has_credentials = bool(self.app_id and self.auth_token)
 
         self._client = httpx.AsyncClient(
             base_url=self.base_url,
@@ -70,6 +75,40 @@ class IconikClient:
             "Accept": "application/json",
         }
 
+    def _token_fingerprint(self) -> str:
+        """Get a short token fingerprint for profile verification."""
+        return hashlib.sha256(self.auth_token.encode("utf-8")).hexdigest()[:12]
+
+    async def get_connection_context(self, include_current_user: bool = True) -> dict[str, Any]:
+        """Return non-secret auth/runtime context to verify active account."""
+        context: dict[str, Any] = {
+            "base_url": self.base_url,
+            "auth_mode": self.auth_mode,
+            "app_id": self.app_id,
+            "token_fingerprint": self._token_fingerprint(),
+            "has_credentials": self.has_credentials,
+        }
+
+        if self.auth_mode == "jwt":
+            payload = self._decode_jwt_payload(self.auth_token)
+            context["jwt_claims"] = {
+                "app_id": payload.get("app_id"),
+                "exp": payload.get("exp"),
+                "sys": payload.get("sys"),
+                "id": payload.get("id"),
+            }
+
+        if include_current_user:
+            user = await self.get_current_user()
+            context["current_user"] = {
+                "id": user.get("id"),
+                "email": user.get("email"),
+                "username": user.get("username"),
+                "name": user.get("name"),
+            }
+
+        return context
+
     async def request(
         self,
         method: str,
@@ -88,6 +127,11 @@ class IconikClient:
         Returns:
             API response as dictionary
         """
+        if not self.has_credentials:
+            raise ValueError(
+                "Iconik credentials are missing. Set ICONIK_API or ICONIK_APP_ID and ICONIK_AUTH_TOKEN."
+            )
+
         # Ensure path starts with /API/
         if not path.startswith("/API/"):
             path = f"/API/{path.lstrip('/')}"

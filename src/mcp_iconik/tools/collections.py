@@ -1,6 +1,6 @@
 """Collection tools for Iconik MCP."""
 
-from typing import Optional
+from typing import Any, Optional
 
 from mcp.server.fastmcp import FastMCP
 
@@ -10,12 +10,12 @@ from ..client import IconikClient
 def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
     """Register collection-related tools."""
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_list_collections(
         page: int = 1,
         per_page: int = 50,
         sort: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """List collections in Iconik. Returns paginated list of collections.
 
         Args:
@@ -25,8 +25,8 @@ def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.list_collections(page=page, per_page=per_page, sort=sort)
 
-    @mcp.tool()
-    async def iconik_get_collection(collection_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_get_collection(collection_id: str) -> dict[str, Any]:
         """Get detailed information about a specific collection.
 
         Args:
@@ -34,12 +34,12 @@ def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_collection(collection_id)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_create_collection(
         title: str,
         description: Optional[str] = None,
         parent_id: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a new collection in Iconik.
 
         Args:
@@ -54,12 +54,12 @@ def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
             data["parent_id"] = parent_id
         return await client.create_collection(data)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_update_collection(
         collection_id: str,
         title: Optional[str] = None,
         description: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update an existing collection's properties.
 
         Args:
@@ -74,8 +74,8 @@ def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
             data["description"] = description
         return await client.update_collection(collection_id, data)
 
-    @mcp.tool()
-    async def iconik_delete_collection(collection_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_delete_collection(collection_id: str) -> dict[str, Any]:
         """Delete a collection from Iconik.
 
         Args:
@@ -83,12 +83,12 @@ def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.delete_collection(collection_id)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_get_collection_contents(
         collection_id: str,
         page: int = 1,
         per_page: int = 50,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Get the contents (assets and sub-collections) of a collection.
 
         Args:
@@ -98,12 +98,12 @@ def register_collection_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_collection_contents(collection_id, page=page, per_page=per_page)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_add_to_collection(
         collection_id: str,
         object_ids: list[str],
         object_type: str = "assets",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Add assets or collections to a collection.
 
         Args:

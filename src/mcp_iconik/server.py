@@ -91,6 +91,8 @@ async def openapi_json(request):
         tools.append({
             "name": tool.name,
             "description": tool.description or "",
+            "input_schema": tool.parameters,
+            "output_schema": tool.output_schema,
         })
 
     return JSONResponse({

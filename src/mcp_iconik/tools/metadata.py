@@ -10,11 +10,11 @@ from ..client import IconikClient
 def register_metadata_tools(mcp: FastMCP, client: IconikClient) -> None:
     """Register metadata-related tools."""
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_list_metadata_views(
         page: int = 1,
         per_page: int = 50,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """List all metadata views (schemas) configured in Iconik.
 
         Args:
@@ -23,8 +23,8 @@ def register_metadata_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.list_metadata_views(page=page, per_page=per_page)
 
-    @mcp.tool()
-    async def iconik_get_metadata_view(view_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_get_metadata_view(view_id: str) -> dict[str, Any]:
         """Get details of a specific metadata view including its fields.
 
         Args:
@@ -32,8 +32,8 @@ def register_metadata_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_metadata_view(view_id)
 
-    @mcp.tool()
-    async def iconik_get_asset_metadata(asset_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_get_asset_metadata(asset_id: str) -> dict[str, Any]:
         """Get all metadata values for an asset across all views.
 
         Args:
@@ -41,12 +41,12 @@ def register_metadata_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_asset_metadata(asset_id)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_update_asset_metadata(
         asset_id: str,
         view_id: str,
         metadata_values: dict[str, Any],
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update metadata values for an asset in a specific view.
 
         Args:

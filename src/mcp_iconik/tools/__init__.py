@@ -9,6 +9,7 @@ from .files import register_file_tools
 from .generic import register_generic_tools
 from .jobs import register_job_tools
 from .metadata import register_metadata_tools
+from .schemas import register_schema_tools
 from .search import register_search_tools
 from .users import register_user_tools
 
@@ -23,3 +24,4 @@ def register_all_tools(mcp: FastMCP, client: IconikClient) -> None:
     register_search_tools(mcp, client)
     register_user_tools(mcp, client)
     register_generic_tools(mcp, client)
+    register_schema_tools(mcp, client)

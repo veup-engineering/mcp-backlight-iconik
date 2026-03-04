@@ -10,13 +10,13 @@ from ..client import IconikClient
 def register_generic_tools(mcp: FastMCP, client: IconikClient) -> None:
     """Register generic API tools."""
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_api_request(
         method: str,
         path: str,
         params: Optional[dict[str, Any]] = None,
         body: Optional[dict[str, Any]] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Make a generic API request to any Iconik endpoint.
 
         Use this for endpoints not covered by other tools.
@@ -43,11 +43,11 @@ def register_generic_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.api_request(method=method, path=path, params=params, body=body)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_get_acls(
         object_type: str,
         object_id: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Get access control list (permissions) for an object.
 
         Args:
@@ -56,12 +56,12 @@ def register_generic_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_acls(object_type, object_id)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_update_acls(
         object_type: str,
         object_id: str,
         acl_entries: list[dict[str, Any]],
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update access control list (permissions) for an object.
 
         Args:
