@@ -71,6 +71,22 @@ For run-of-day matching against external logs, compare the visible wall-clock ti
 do not let drop-frame math create large noon/afternoon drift when one source uses `:` and the other
 uses `;`.
 
+## Segment Timing Interpretation
+
+Read comments and timed metadata together from:
+
+```bash
+GET /API/assets/v1/assets/{asset_id}/segments/?page=1&per_page=100
+```
+
+- The response `objects` can mix `COMMENT`, `GENERIC`, and other segment types.
+- A point comment normally has equal `time_start_milliseconds` and `time_end_milliseconds`.
+- A `GENERIC` timed-metadata row can be an interval around an event mark. Do not treat its start as
+  the event time. For a symmetric interval, compare the midpoint with the point comment; otherwise
+  read the source mark from the segment metadata view.
+- Page size may be capped by the API. Count returned objects and paginate instead of assuming a large
+  `per_page` value returned the complete asset timeline.
+
 ## Troubleshooting
 1. If startup fails, inspect:
 ```bash
