@@ -73,6 +73,14 @@ MCP (Model Context Protocol) server providing tools for the [Iconik](https://ico
 - `iconik_get_acls` - Get object ACLs
 - `iconik_update_acls` - Update object ACLs
 
+### Schema & Context
+- `iconik_get_connection_context` - Verify active base URL/auth/app context
+- `iconik_list_api_specs` - List bundled OpenAPI spec groups
+- `iconik_list_api_operations` - List operations in one spec
+- `iconik_get_api_operation_schema` - Get operation request/response schema
+- `iconik_get_api_component_schema` - Get component schema by name
+- `iconik_resolve_api_ref` - Resolve local OpenAPI `$ref` pointers
+
 ## Quick Start
 
 ### Using Docker Compose
@@ -176,9 +184,18 @@ http://localhost:8000/mcp
 | `ICONIK_APP_ID` | Application ID | - |
 | `ICONIK_AUTH_TOKEN` | Auth token | - |
 | `ICONIK_URL` | Iconik base URL | `https://app.iconik.io` |
+| `ICONIK_OPENAPI_DIR` | Directory containing Iconik OpenAPI JSON specs | Auto-detected (`docs/iconik_swagger_defs` first) |
 | `HOST` | Server host | `0.0.0.0` |
 | `PORT` | Server port | `8000` |
 | `DEBUG` | Enable debug mode | `false` |
+
+## Structured Outputs
+
+All tools are registered with structured output enabled, which means MCP clients can read
+`outputSchema` from tool definitions and consume `structuredContent` directly.
+
+The `/openapi.json` endpoint also includes each tool's input and output schemas under
+`x-mcp-tools`.
 
 ## Getting Iconik Credentials
 

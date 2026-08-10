@@ -10,12 +10,12 @@ from ..client import IconikClient
 def register_job_tools(mcp: FastMCP, client: IconikClient) -> None:
     """Register job-related tools."""
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_list_jobs(
         page: int = 1,
         per_page: int = 50,
         status: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """List jobs in Iconik (uploads, transcodes, analysis, etc.).
 
         Args:
@@ -25,8 +25,8 @@ def register_job_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.list_jobs(page=page, per_page=per_page, status=status)
 
-    @mcp.tool()
-    async def iconik_get_job(job_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_get_job(job_id: str) -> dict[str, Any]:
         """Get details of a specific job including its progress and status.
 
         Args:
@@ -34,14 +34,14 @@ def register_job_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_job(job_id)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_create_job(
         title: str,
         type: str,
         object_id: Optional[str] = None,
         object_type: Optional[str] = None,
         metadata: Optional[dict[str, Any]] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a new job in Iconik.
 
         Args:
@@ -60,13 +60,13 @@ def register_job_tools(mcp: FastMCP, client: IconikClient) -> None:
             data["metadata"] = metadata
         return await client.create_job(data)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_update_job(
         job_id: str,
         status: Optional[str] = None,
         progress: Optional[float] = None,
         message: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update a job's status or progress.
 
         Args:

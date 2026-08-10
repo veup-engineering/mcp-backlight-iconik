@@ -1,6 +1,6 @@
 """Asset tools for Iconik MCP."""
 
-from typing import Optional
+from typing import Any, Optional
 
 from mcp.server.fastmcp import FastMCP
 
@@ -10,12 +10,12 @@ from ..client import IconikClient
 def register_asset_tools(mcp: FastMCP, client: IconikClient) -> None:
     """Register asset-related tools."""
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_list_assets(
         page: int = 1,
         per_page: int = 50,
         sort: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """List assets in Iconik. Returns paginated list of assets with their metadata.
 
         Args:
@@ -25,8 +25,8 @@ def register_asset_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.list_assets(page=page, per_page=per_page, sort=sort)
 
-    @mcp.tool()
-    async def iconik_get_asset(asset_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_get_asset(asset_id: str) -> dict[str, Any]:
         """Get detailed information about a specific asset by its ID.
 
         Args:
@@ -34,13 +34,13 @@ def register_asset_tools(mcp: FastMCP, client: IconikClient) -> None:
         """
         return await client.get_asset(asset_id)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_create_asset(
         title: str,
         description: Optional[str] = None,
         type: Optional[str] = None,
         status: str = "ACTIVE",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a new asset in Iconik.
 
         Args:
@@ -58,13 +58,13 @@ def register_asset_tools(mcp: FastMCP, client: IconikClient) -> None:
             data["status"] = status
         return await client.create_asset(data)
 
-    @mcp.tool()
+    @mcp.tool(structured_output=True)
     async def iconik_update_asset(
         asset_id: str,
         title: Optional[str] = None,
         description: Optional[str] = None,
         status: Optional[str] = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update an existing asset's properties.
 
         Args:
@@ -82,8 +82,8 @@ def register_asset_tools(mcp: FastMCP, client: IconikClient) -> None:
             data["status"] = status
         return await client.update_asset(asset_id, data)
 
-    @mcp.tool()
-    async def iconik_delete_asset(asset_id: str) -> dict:
+    @mcp.tool(structured_output=True)
+    async def iconik_delete_asset(asset_id: str) -> dict[str, Any]:
         """Delete an asset from Iconik. This moves the asset to the delete queue.
 
         Args:
